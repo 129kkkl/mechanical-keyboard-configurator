@@ -1,0 +1,9 @@
+# Backups and temporary files
+备份_*/
+*.tmp
+*.bak
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

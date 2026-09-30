@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>星轨键盘工作室 STELLARAIL Studio · 机械键盘配置器</title>
+<style>
+/*__STYLE__*/
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo">K</div>
+    <div class="brand">STELLARAIL 星轨<small>KEYBOARD STUDIO</small></div>
+    <nav class="views" aria-label="视角">
+      <button class="view-btn" data-view="hero" aria-pressed="true">默认</button>
+      <button class="view-btn" data-view="top" aria-pressed="false">俯视</button>
+      <button class="view-btn" data-view="side" aria-pressed="false">侧面</button>
+      <button class="view-btn" data-view="back" aria-pressed="false">背面</button>
+      <button class="view-btn" data-view="detail" aria-pressed="false">细节</button>
+    </nav>
+    <button class="btn ghost" id="btnDrawer">☰ 选型</button>
+    <label class="spin-toggle" title="自动旋转">
+      <input type="checkbox" id="chkSpin" checked>
+      <span>自动旋转</span>
+    </label>
+    <select id="sceneSelect" class="hdr-select" aria-label="展示场景"></select>
+    <select id="qualitySelect" class="hdr-select" aria-label="渲染质量">
+      <option value="high">高质量</option>
+      <option value="low">低功耗</option>
+    </select>
+    <button class="btn ghost" id="btnFocusMode">专注展示</button>
+    <button class="btn ghost" id="btnExportPng">导出 PNG</button>
+  </header>
+
+  <main>
+    <aside id="products" aria-label="产品选择">
+      <h2>配列</h2>
+      <div id="layoutCards" class="cards"></div>
+      <h2>外观系列</h2>
+      <div id="familyCards" class="cards"></div>
+    </aside>
+
+    <section id="viewer">
+      <div id="gl" role="application" aria-label="键盘三维预览，可拖拽旋转、滚轮缩放" tabindex="0"></div>
+      <div class="hero">
+        <h1 id="heroName">星轨 K65</h1>
+        <p id="heroDesc"></p>
+        <div class="price"><b id="heroPrice"></b><span class="price-note">演示估价 · 非真实售价</span></div>
+        <div class="chips" id="heroChips"></div>
+      </div>
+      <div class="hint">
+        <span><i></i>拖拽旋转</span>
+        <span><i></i>滚轮 / 双指缩放</span>
+        <span><i></i>体验模式下敲 A–Z / 空格试轴</span>
+      </div>
+      <div id="perfHud" hidden></div>
+      <div id="partChip" hidden>
+        <b id="partChipName"></b>
+        <span id="partChipDesc"></span>
+        <button class="mini-btn" id="btnOverview">返回全景</button>
+      </div>
+      <div id="glFallback" hidden>
+        <div class="fallback-card">
+          <h3>3D 预览不可用</h3>
+          <p id="fallbackMsg">当前环境无法创建 WebGL 上下文。你仍可浏览配置与二维键位图。</p>
+          <button class="btn" id="btnReload">重新加载</button>
+        </div>
+      </div>
+    </section>
+
+    <aside id="panel" aria-label="配置">
+      <details open>
+        <summary>外观</summary>
+        <div class="group">
+          <label class="g-label">外壳颜色</label>
+          <div class="swatches" id="caseSwatches" role="group" aria-label="外壳颜色"></div>
+        </div>
+        <div class="group">
+          <label class="g-label">键帽主题</label>
+          <div class="swatches" id="capSwatches" role="group" aria-label="键帽主题"></div>
+        </div>
+        <div class="group">
+          <label class="g-label">键帽轮廓（原创设计）</label>
+          <div class="swatches profiles" id="profileSwatches" role="group" aria-label="键帽轮廓"></div>
+        </div>
+        <div class="group">
+          <label class="g-label">分区自定义 <button class="mini-btn" id="btnZoneReset">恢复主题</button></label>
+          <div class="zone-rows" id="zoneRows"></div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>轴体与声音</summary>
+        <div class="group">
+          <div class="swatches switches" id="switchSwatches" role="group" aria-label="轴体"></div>
+          <p class="note">轴体参数为设计标称值；试音为 WebAudio 合成演示，非实录。</p>
+          <div class="vol-row">
+            <label for="volRange">音量</label>
+            <input type="range" id="volRange" min="0" max="100" step="1">
+            <button class="mini-btn" id="btnMute" aria-pressed="false">静音</button>
+          </div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>结构拆解</summary>
+        <div class="group">
+          <input type="range" id="explodeRange" min="0" max="100" step="1" value="0" aria-label="拆解进度">
+          <div class="layer-legend" id="layerLegend"></div>
+          <button class="btn" id="btnExplode" aria-pressed="false">拆解键盘</button>
+          <button class="btn ghost wide" id="btnCapPick" aria-pressed="false">取帽模式：点击取下键帽</button>
+        </div>
+      </details>
+
+      <details open>
+        <summary>体验模式</summary>
+        <div class="group">
+          <div class="toggle-row">
+            <div>
+              <div class="t-name">敲击试轴</div>
+              <div class="t-desc">开启后按下 A–Z / 空格等键，对应键帽下压回弹；触屏可直接点按键帽。</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="chkType">
+              <span class="track" aria-hidden="true"></span>
+              <span class="sr-only">敲击试轴开关</span>
+            </label>
+          </div>
+          <div class="typelog">
+            <div class="typelog-head">
+              <span>最近按键</span>
+              <button class="mini-btn" id="btnClearKeys">清除</button>
+            </div>
+            <div class="typelog-keys" id="typeRecent">—</div>
+            <div class="typelog-count" id="typeCount">本次已检测 0 个键</div>
+          </div>
+          <input class="demo-input" id="demoInput" placeholder="在此输入时不会触发键帽动画（正常输入不被劫持）">
+        </div>
+      </details>
+
+      <details open>
+        <summary>当前配置</summary>
+        <div class="summary" id="summary"></div>
+      </details>
+
+      <details>
+        <summary>二维键位图</summary>
+        <div class="group"><div id="map2d" class="map2d" aria-label="二维键位布局图"></div></div>
+      </details>
+
+      <details>
+        <summary>方案管理</summary>
+        <div class="group">
+          <div class="slot-save-row">
+            <input id="slotName" class="demo-input" placeholder="方案名称，如：白蓝办公" maxlength="20">
+            <button class="btn primary" id="btnSlotSave">存为方案</button>
+          </div>
+          <div id="slotList" class="slot-list"></div>
+          <div class="io-row">
+            <button class="btn ghost" id="btnExportJson">导出 JSON</button>
+            <button class="btn ghost" id="btnImportJson">导入 JSON</button>
+            <input type="file" id="fileImport" accept="application/json,.json" hidden>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>方案对比</summary>
+        <div class="group">
+          <div class="cmp-row">
+            <select id="cmpA" aria-label="对比方案 A"></select>
+            <span>vs</span>
+            <select id="cmpB" aria-label="对比方案 B"></select>
+          </div>
+          <button class="btn" id="btnCompare">生成对比</button>
+          <div id="cmpResult" class="cmp-result"></div>
+        </div>
+      </details>
+
+      <div class="row2">
+        <button class="btn primary" id="btnSave">保存配置</button>
+        <button class="btn" id="btnReset">恢复默认</button>
+      </div>
+    </aside>
+  </main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+/*__THREE__*/
+</script>
+<script>
+/*__DATA__*/
+</script>
+<script>
+/*__APP__*/
+</script>
+</body>
+</html>
